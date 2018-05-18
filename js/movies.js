@@ -1,3 +1,7 @@
+$(document).ready(function (event) {
+	loadData();
+});
+
 
 data = '';
 var displayMovie = "";
@@ -104,12 +108,10 @@ document.getElementById("reviews").innerHTML = "";
 
 
 function gotoMainPage () {
+	  
         window.location = "index.html";
     }
 
-$(document).ready(function (event) {
-	loadData();
-});
 
 
  
