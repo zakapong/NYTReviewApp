@@ -1,30 +1,31 @@
-$(document).ready(function (event) {
+$(document).ready(function () {
 	loadData();
 });
 
+var displayMovie = '';
 
-data = '';
-var displayMovie = "";
+function getNewYorkTimesApiUrl(isTextSearch, term)  {
+  var url = "https://api.nytimes.com/svc/movies/v2/reviews/search.json?api-key=aa6b434cdfd24541a23901a5043479de";
+  return isTextSearch ? url + '&query=' + term : url;
+}
 
 function loadData () {
-var url = "https://api.nytimes.com/svc/movies/v2/reviews/search.json";
-url += '?' + $.param({
-  'api-key': "aa6b434cdfd24541a23901a5043479de"
-});
-$.ajax({
-  url: url,
-  method: 'GET',
-}).done(function(response) {
-  data = response.results;
-  var dataStore = localStorage.setItem('dataStore', JSON.stringify(data));
-  displayData(data);
 
-  $('#reviews').html(displayMovie); 
-  displayMovie = "";
+  $.ajax({
+    url: getNewYorkTimesApiUrl(false),
+    method: 'GET',
+  }).done(function(response) {
+    var data = response.results;
+    var dataStore = localStorage.setItem('dataStore', JSON.stringify(data));
+    displayData(data);
 
-}).fail(function(err) {
-  throw err;
-});
+    $('#reviews').html(displayMovie);
+    // Clear the content of displayMovie to avoid duplicates data. 
+    displayMovie = '';
+
+  }).fail(function(err) {
+    throw err;
+  });
 }
 
 
@@ -48,21 +49,18 @@ function displayData(infoToDisplay) {
   }
 }
 
- 
-
 function selectedMovieReview(reviewMovieId) {
   var reviewId = sessionStorage.setItem('reviewId', reviewMovieId);
   window.location = 'reviewDetail.html';
   return false;
 }
 
-function getMovieDetails(){
- 
-  var reviewId = sessionStorage.getItem('reviewId');
-   var dataStore = JSON.parse(localStorage.getItem('dataStore'));
 
-    var output = '';
-    
+
+function getMovieDetails(){
+  var reviewId = sessionStorage.getItem('reviewId');
+  var dataStore = JSON.parse(localStorage.getItem('dataStore'));
+  var output = '';
     output += `<section class="jumbotron text-center">
       <div class="container">
 		<h1 class="jumbotron-heading">` + dataStore[reviewId].display_title + `</h1>
@@ -72,46 +70,29 @@ function getMovieDetails(){
         </p>
       </div>
     </section>`
-    $('#review-detail').html(output); 
-    
+    $('#review-detail').html(output);
+  
 }
 
 
 function searchText() {
+  var term = document.getElementById("searchTerm").value
 
-  var term =document.getElementById("searchTerm").value
-  var url = "https://api.nytimes.com/svc/movies/v2/reviews/search.json";
-url += '?' + $.param({
-  'api-key': "aa6b434cdfd24541a23901a5043479de",
-  'query': term
-});
+  $.ajax({
+    url: getNewYorkTimesApiUrl(true, term),
+    method: 'GET',
+  }).done(function(response) {
+    var updatedInfo = response.results;
+    displayData(updatedInfo);
+    document.getElementById("reviews").innerHTML = '';
 
-$.ajax({
-  url: url,
-  method: 'GET',
-}).done(function(response) {
-  var updatedInfo = response.results;
-  var output = '';
-  console.log(updatedInfo);
+  $('#reviews').html(displayMovie);
 
-  displayData(updatedInfo);
-document.getElementById("reviews").innerHTML = "";
-
- $('#reviews').html(displayMovie);
- // clear review   
- displayMovie = "";
-
-}).fail(function(err) {
-  throw err;
-});
+  }).fail(function(err) {
+    throw err;
+  });
 }
 
-
-function gotoMainPage () {
-	  
-        window.location = "index.html";
-    }
-
-
-
- 
+function gotoMainPage () {	  
+  window.location = "index.html";
+}
